@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import urllib
+import urllib.parse
 import json
 import os
 
@@ -18,25 +18,30 @@ def webhook():
 
     print("Request:")
     print(json.dumps(req, indent=4))
+    print('%%%%%%%%%%%%%')
 
-    res = processRequest(req)
+    res = {
+        "speech": "Test",
+        "displayText": "test",
+        "data": {"slack": "sss"},
+        "contextOut": [{"name":"weather", "lifespan":2, "parameters":{"geo-city":"London"}}, {"name":"greetings", "lifespan":10, "parameters":{"name":"Leo"}}],
+        "source": "apiai-weather-webhook-sample"
+    }
+    print(res)
+    print('&&&&&&&&&&&&&&&&')
 
     res = json.dumps(res, indent=4)
-    # print(res)
-    r = make_response(res)
-    r.headers['Content-Type'] = 'application/json'
-    return r
+    return res
 
 
 def processRequest(req):
-    if req.get("result").get("action") != "yahooWeatherForecast":
-        return {}
+    print(req)
     baseurl = "https://query.yahooapis.com/v1/public/yql?"
     yql_query = makeYqlQuery(req)
     if yql_query is None:
         return {}
-    yql_url = baseurl + urllib.urlencode({'q': yql_query}) + "&format=json"
-    result = urllib.urlopen(yql_url).read()
+    yql_url = baseurl + urllib.parse.urlencode({'q': yql_query}) + "&format=json"
+    result = urllib.parse.urlopen(yql_url).read()
     data = json.loads(result)
     res = makeWebhookResult(data)
     return res
@@ -44,8 +49,8 @@ def processRequest(req):
 
 def makeYqlQuery(req):
     result = req.get("result")
-    parameters = result.get("parameters")
-    city = parameters.get("geo-city")
+    # parameters = result.get("parameters")
+    city = "sunnyvale"
     if city is None:
         return None
 
@@ -120,9 +125,9 @@ def makeWebhookResult(data):
     print(json.dumps(slack_message))
 
     return {
-        "speech": speech,
-        "displayText": speech,
-        "data": {"slack": slack_message},
+        "speech": "Test",
+        "displayText": "test",
+        "data": {"slack": "sss"},
         "contextOut": [{"name":"weather", "lifespan":2, "parameters":{"geo-city":"London"}}, {"name":"greetings", "lifespan":10, "parameters":{"name":"Leo"}}],
         "source": "apiai-weather-webhook-sample"
     }
